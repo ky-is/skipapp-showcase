@@ -13,9 +13,18 @@ struct TabViewPlayground: View {
             TabPlaygroundContentView(label: "Home", selectedTab: $selectedTab)
                 .tabItem { Label("Home", systemImage: "house.fill") }
                 .tag("Home")
-            TabPlaygroundContentView(label: "Favorites", selectedTab: $selectedTab)
-                .tabItem { Label("Favorites", systemImage: "heart.fill") }
-                .tag("Favorites")
+            TabView {
+                TabPlaygroundContentView(label: "Favorites (page 1)", selectedTab: $selectedTab)
+                    .padding(32)
+                    .background {
+                        Capsule()
+                            .fill(Color.pink.opacity(0.1))
+                    }
+                Text("More (page 2)")
+            }
+            .tabViewStyle(.page)
+            .tabItem { Label("Favorites", systemImage: "heart.fill") }
+            .tag("Favorites")
             TabPageViewContentView()
                 .tabItem { Label("Paging", systemImage: "arrow.forward.square") }
                 .tag("Paging")
@@ -27,7 +36,7 @@ struct TabViewPlayground: View {
     }
 
     struct TabPageViewContentView: View {
-        @State var showExtraPage = false
+        @State var pageCount = 1
 
         var body: some View {
             ScrollView {
@@ -43,8 +52,16 @@ struct TabViewPlayground: View {
                         Text("I heard you like TabViews so we put a TabView inside your TabView inside your TabView")
                             .background(Color.green)
                     }
-                    .tabViewStyle(.page)
                     .frame(height: 128)
+                    TabView {
+                        Rectangle()
+                            .fill(Color.indigo)
+                            .overlay {
+                                Text("Unconstrained\nTabView")
+                            }
+                        Text("2")
+                            .background(Color.red)
+                    }
                     TabView {
                         Rectangle()
                             .fill(Color.purple)
@@ -56,7 +73,6 @@ struct TabViewPlayground: View {
                             .fill(Color.purple)
                             .frame(width: 64, height: 96)
                     }
-                    .tabViewStyle(.page)
                     TabView {
                         Image(systemName: "heart")
                             .resizable()
@@ -65,23 +81,23 @@ struct TabViewPlayground: View {
                             .resizable()
                             .background(Color.red)
                     }
-                    .tabViewStyle(.page)
                     .aspectRatio(2, contentMode: ContentMode.fill)
                     TabView {
-                        Rectangle()
-                            .fill(Color.blue)
-                            .overlay {
-                                Button("Tap to \(showExtraPage ? "hide" : "show") extra page") {
-                                    showExtraPage = !showExtraPage
+                        ForEach(1...pageCount, id: \.self) { pageNumber in
+                            Rectangle()
+                                .fill(Color(hue: Double(pageNumber) * 0.1, saturation: 0.5, brightness: 1))
+                                .overlay {
+                                    Button("Add page \(pageCount + 1)") {
+                                        pageCount += 1
+                                    }
+                                    if pageCount > 1 {
+                                        Button("Remove page \(pageCount)") {
+                                            pageCount -= 1
+                                        }
+                                    }
                                 }
-                            }
-                        if showExtraPage {
-                            Button("Hide this page") {
-                                showExtraPage = false
-                            }
                         }
                     }
-                    .tabViewStyle(.page)
                     .frame(height: 128)
                     TabView {
                         Rectangle()
@@ -103,6 +119,7 @@ struct TabViewPlayground: View {
                     .tabViewStyle(.page(indexDisplayMode: .never))
                     .frame(height: 128)
                 }
+                .tabViewStyle(.page)
                 .foregroundStyle(Color.white)
             }
         }
